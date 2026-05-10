@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PawTalk — What's your pet really saying?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:ital,wght@0,400;0,700;0,900;1,700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:#0d0d0d;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+/* =====================
+   HERO
+===================== */
+.hero{
+  position:relative;width:100%;
+  height:100vh;min-height:640px;max-height:900px;
+  overflow:hidden;
+}
+
+/* Pet grid — full bleed, 5 columns 2 rows */
+.pet-grid{
+  position:absolute;inset:0;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:1fr 1fr;
+  gap:4px;
+}
+
+.pet-cell{
+  position:relative;overflow:hidden;
+  cursor:default;
+}
+
+.pet-cell img{
+  width:100%;height:100%;
+  object-fit:cover;
+  filter:brightness(0.75) saturate(1.3);
+  transition:filter 0.5s, transform 0.5s;
+  animation:imgbreath 6s ease-in-out infinite;
+}
+/* Each cell breathes at different timing */
+.pet-cell:nth-child(1) img{animation-delay:0s;}
+.pet-cell:nth-child(2) img{animation-delay:0.8s;}
+.pet-cell:nth-child(3) img{animation-delay:1.6s;}
+.pet-cell:nth-child(4) img{animation-delay:2.4s;}
+.pet-cell:nth-child(5) img{animation-delay:3.2s;}
+.pet-cell:nth-child(6) img{animation-delay:0.4s;}
+.pet-cell:nth-child(7) img{animation-delay:1.2s;}
+.pet-cell:nth-child(8) img{animation-delay:2.0s;}
+.pet-cell:nth-child(9) img{animation-delay:2.8s;}
+.pet-cell:nth-child(10) img{animation-delay:3.6s;}
+
+@keyframes imgbreath{
+  0%,100%{filter:brightness(0.72) saturate(1.2); transform:scale(1);}
+  50%{filter:brightness(0.88) saturate(1.5); transform:scale(1.04);}
+}
+
+/* Speech bubbles on each pet cell */
+.pet-bubble{
+  position:absolute;
+  background:white;
+  border-radius:14px;
+  padding:7px 11px;
+  font-size:0.68rem;
+  font-weight:900;
+  line-height:1.35;
+  color:#222;
+  text-align:center;
+  white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+  z-index:5;
+  pointer-events:none;
+  animation:bubblePop 4s ease-in-out infinite;
+}
+.pet-bubble::after{
+  content:'';
+  position:absolute;
+  bottom:-8px;left:50%;
+  transform:translateX(-50%);
+  border:6px solid transparent;
+  border-top-color:white;
+}
+/* Stagger each bubble */
+.pet-cell:nth-child(1) .pet-bubble{animation-delay:0s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(2) .pet-bubble{animation-delay:0.7s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(3) .pet-bubble{animation-delay:1.4s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(4) .pet-bubble{animation-delay:2.1s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(5) .pet-bubble{animation-delay:2.8s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(6) .pet-bubble{animation-delay:0.4s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(7) .pet-bubble{animation-delay:1.1s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(8) .pet-bubble{animation-delay:1.8s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(9) .pet-bubble{animation-delay:2.5s; top:14px; left:50%; transform:translateX(-50%);}
+.pet-cell:nth-child(10) .pet-bubble{animation-delay:3.2s; top:14px; left:50%; transform:translateX(-50%);}
+
+@keyframes bubblePop{
+  0%{opacity:0; transform:translateX(-50%) translateY(-6px) scale(0.85);}
+  15%{opacity:1; transform:translateX(-50%) translateY(0) scale(1);}
+  75%{opacity:1; transform:translateX(-50%) translateY(-4px) scale(1);}
+  90%,100%{opacity:0; transform:translateX(-50%) translateY(-10px) scale(0.9);}
+}
+
+/* Pet name label at bottom of each cell */
+.pet-name{
+  position:absolute;bottom:10px;left:0;right:0;
+  text-align:center;font-size:0.65rem;font-weight:900;
+  color:rgba(255,255,255,0.85);letter-spacing:1px;
+  text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,0.8);
+  z-index:5;
+}
+
+/* Central overlay for logo */
+.hero-center{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:20;
+  background:radial-gradient(ellipse 60% 55% at 50% 50%,
+    rgba(0,0,0,0.78) 0%,
+    rgba(0,0,0,0.3) 60%,
+    rgba(0,0,0,0) 100%);
+  pointer-events:none;
+}
+.hero-center a{pointer-events:all;}
+
+.hero-logo{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(4.5rem,13vw,9rem);
+  line-height:0.95;
+  background:linear-gradient(135deg,#FF6B35 0%,#FFD700 50%,#FF6B35 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:logopulse 3s ease-in-out infinite;
+  margin-bottom:10px;
+}
+@keyframes logopulse{
+  0%,100%{filter:drop-shadow(0 0 30px rgba(255,107,53,0.5));}
+  50%{filter:drop-shadow(0 0 60px rgba(255,215,0,0.8));}
+}
+
+.hero-tag{
+  font-size:clamp(0.75rem,2vw,1rem);
+  font-weight:700;color:rgba(255,255,255,0.65);
+  letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:28px;
+}
+
+.hero-cta{
+  background:linear-gradient(135deg,#FF6B35,#FF9A5C);
+  color:white;font-family:'Fredoka One',cursive;
+  font-size:1.35rem;padding:15px 42px;
+  border-radius:50px;text-decoration:none;
+  box-shadow:0 8px 32px rgba(255,107,53,0.55);
+  transition:all 0.25s;cursor:pointer;border:none;
+  display:inline-block;
+}
+.hero-cta:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 16px 44px rgba(255,107,53,0.7);}
+
+.scroll-hint{
+  position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+  z-index:25;color:rgba(255,255,255,0.35);
+  font-size:0.7rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  animation:scrollbounce 2.2s ease-in-out infinite;
+}
+@keyframes scrollbounce{
+  0%,100%{opacity:0.3;transform:translateX(-50%) translateY(0);}
+  50%{opacity:0.65;transform:translateX(-50%) translateY(-6px);}
+}
+
+/* =====================
+   TICKER
+===================== */
+.ticker{background:#FF6B35;padding:11px 0;overflow:hidden;white-space:nowrap;position:relative;z-index:10;}
+.ticker-track{display:inline-block;animation:tickscroll 32s linear infinite;font-size:0.88rem;font-weight:900;color:white;letter-spacing:0.3px;}
+@keyframes tickscroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* =====================
+   HOW IT WORKS
+===================== */
+.section{padding:80px 20px;text-align:center;}
+.section.dark{background:#111;}
+.section.darker{background:#0a0a0a;}
+
+.section-label{font-size:0.72rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#FF6B35;margin-bottom:10px;}
+.section-title{font-family:'Fredoka One',cursive;font-size:clamp(1.8rem,5vw,3rem);color:white;margin-bottom:50px;line-height:1.1;}
+
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;max-width:920px;margin:0 auto;}
+
+.how-card{
+  border-radius:20px;overflow:hidden;
+  background:#1a1a1a;
+  transition:transform 0.3s,box-shadow 0.3s;
+  cursor:default;
+}
+.how-card:hover{transform:translateY(-8px);box-shadow:0 20px 50px rgba(0,0,0,0.5);}
+.how-card img{width:100%;height:200px;object-fit:cover;filter:brightness(0.9) saturate(1.2);transition:filter 0.4s;}
+.how-card:hover img{filter:brightness(1.05) saturate(1.4);}
+.how-card-body{padding:20px;text-align:left;}
+.how-num{font-family:'Fredoka One',cursive;font-size:2.2rem;color:#FF6B35;line-height:1;margin-bottom:4px;}
+.how-title{font-size:1.05rem;font-weight:900;color:white;margin-bottom:5px;}
+.how-desc{font-size:0.82rem;font-weight:700;color:rgba(255,255,255,0.45);line-height:1.55;}
+
+/* =====================
+   PET STRIP (hover bubbles)
+===================== */
+.pet-strip{display:flex;gap:0;overflow:hidden;height:260px;}
+.strip-cell{
+  flex:1;min-width:0;position:relative;overflow:hidden;cursor:pointer;
+}
+.strip-cell img{
+  width:100%;height:100%;object-fit:cover;
+  filter:brightness(0.7) saturate(1.2);
+  transition:filter 0.4s,transform 0.4s;
+}
+.strip-cell:hover img{filter:brightness(1) saturate(1.5);transform:scale(1.07);}
+
+.strip-bub{
+  position:absolute;background:white;border-radius:12px;
+  padding:7px 11px;font-size:0.7rem;font-weight:900;color:#222;
+  line-height:1.35;text-align:center;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4);
+  bottom:55px;left:50%;transform:translateX(-50%) scale(0.85);
+  opacity:0;transition:all 0.3s;z-index:5;pointer-events:none;
+}
+.strip-bub::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:white;}
+.strip-cell:hover .strip-bub{opacity:1;transform:translateX(-50%) scale(1);}
+
+.strip-label{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:0.65rem;font-weight:900;color:rgba(255,255,255,0.75);letter-spacing:1px;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,0.8);}
+
+/* =====================
+   APP SECTION
+===================== */
+.app-section{
+  padding:80px 20px;
+  background:linear-gradient(180deg,#0d0d0d 0%,#150d2e 100%);
+  display:flex;flex-direction:column;align-items:center;
+}
+.app-section .section-label{color:#7B5EA7;}
+
+.app-card{
+  background:#18182a;border-radius:28px;
+  border:1px solid rgba(255,255,255,0.07);
+  padding:34px 30px;width:100%;max-width:520px;
+  box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+
+/* Pet toggle */
+.pet-toggle{display:flex;gap:8px;margin-bottom:22px;background:rgba(255,255,255,0.05);border-radius:14px;padding:5px;}
+.ptbtn{flex:1;padding:11px;border-radius:10px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:900;cursor:pointer;color:rgba(255,255,255,0.35);transition:all 0.2s;}
+.ptbtn.active{background:rgba(255,255,255,0.09);color:#FF6B35;}
+.ptbtn.active.iscat{color:#7B5EA7;}
+
+/* Mode */
+.mode-tabs{display:flex;border-radius:12px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.09);margin-bottom:22px;}
+.mtab{flex:1;padding:11px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:900;cursor:pointer;color:rgba(255,255,255,0.35);transition:all 0.2s;}
+.mtab.active{background:#FF6B35;color:white;}
+.mtab.active.iscat{background:#7B5EA7;}
+
+/* Upload */
+.upload-zone{border:2px dashed rgba(255,255,255,0.12);border-radius:16px;padding:30px 16px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);transition:all 0.2s;position:relative;}
+.upload-zone:hover{border-color:#FF6B35;background:rgba(255,107,53,0.05);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.uico{font-size:2.2rem;display:block;margin-bottom:8px;}
+.upload-zone p{font-size:0.85rem;font-weight:700;color:rgba(255,255,255,0.35);}
+
+#prev-wrap{display:none;position:relative;border-radius:14px;overflow:hidden;}
+#prev-img{width:100%;max-height:250px;object-fit:cover;display:block;border-radius:14px;}
+.chg-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.65);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:0.72rem;font-family:'Nunito',sans-serif;font-weight:900;cursor:pointer;}
+
+/* Audio */
+.audio-area{display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 0 8px;}
+.rec-btn{width:92px;height:92px;border-radius:50%;border:none;background:linear-gradient(145deg,#FF6B35,#FF9A5C);color:white;font-family:'Nunito',sans-serif;font-size:0.62rem;font-weight:900;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 8px 28px rgba(255,107,53,0.45);}
+.rec-btn.iscat{background:linear-gradient(145deg,#7B5EA7,#B09FD4);box-shadow:0 8px 28px rgba(123,94,167,0.45);}
+.rec-btn .mic{font-size:2rem;}
+.rec-btn:hover{transform:scale(1.06);}
+.rec-btn.recording{background:#FF3B30!important;animation:sonar 1s infinite;}
+@keyframes sonar{0%{box-shadow:0 0 0 0 rgba(255,59,48,0.5);}100%{box-shadow:0 0 0 24px rgba(255,59,48,0);}}
+.rec-status{font-size:0.82rem;font-weight:800;color:rgba(255,255,255,0.35);text-align:center;}
+.rec-status.live{color:#FF3B30;}
+#pt-audio{display:none;width:100%;border-radius:10px;margin-top:4px;}
+
+/* Name */
+.name-row{display:flex;align-items:center;gap:12px;margin:18px 0 0;}
+.name-row label{font-size:0.85rem;font-weight:900;color:rgba(255,255,255,0.5);white-space:nowrap;}
+.name-row input{flex:1;padding:11px 15px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.09);background:rgba(255,255,255,0.04);font-family:'Nunito',sans-serif;font-size:0.92rem;font-weight:800;outline:none;color:white;transition:border-color 0.2s;}
+.name-row input::placeholder{color:rgba(255,255,255,0.18);}
+.name-row input:focus{border-color:#FF6B35;}
+
+.go-btn{width:100%;padding:16px;border-radius:15px;border:none;background:linear-gradient(135deg,#FF6B35,#7B5EA7);color:white;font-family:'Fredoka One',cursive;font-size:1.25rem;cursor:pointer;margin-top:18px;transition:all 0.2s;box-shadow:0 8px 30px rgba(255,107,53,0.35);}
+.go-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 14px 40px rgba(255,107,53,0.55);}
+.go-btn:disabled{opacity:0.28;cursor:not-allowed;}
+
+.loading{display:none;flex-direction:column;align-items:center;gap:12px;padding:26px 0 8px;}
+.loading.show{display:flex;}
+.paws{display:flex;gap:8px;}
+.paws span{font-size:1.4rem;animation:pb 0.85s infinite;}
+.paws span:nth-child(2){animation-delay:0.17s;}
+.paws span:nth-child(3){animation-delay:0.34s;}
+@keyframes pb{0%,100%{transform:translateY(0) rotate(0);}50%{transform:translateY(-12px) rotate(-12deg);}}
+.load-txt{font-size:0.85rem;font-weight:800;color:rgba(255,255,255,0.35);}
+
+.err{display:none;margin-top:14px;background:rgba(255,59,48,0.1);border:1.5px solid rgba(255,59,48,0.3);border-radius:12px;padding:12px 16px;font-size:0.82rem;font-weight:800;color:#FF6B6B;text-align:center;}
+
+.result{display:none;margin-top:18px;border-radius:18px;padding:20px 18px;animation:popIn 0.35s cubic-bezier(.22,1,.36,1) both;}
+.result.dog-r{border:2px solid #FF6B35;background:rgba(255,107,53,0.07);}
+.result.cat-r{border:2px solid #7B5EA7;background:rgba(123,94,167,0.07);}
+@keyframes popIn{from{opacity:0;transform:scale(0.93);}to{opacity:1;transform:scale(1);}}
+.r-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.r-ava{font-size:1.8rem;background:rgba(255,255,255,0.07);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.r-who{font-family:'Fredoka One',cursive;font-size:1rem;}
+.r-who.dog{color:#FF6B35;}.r-who.cat{color:#7B5EA7;}
+.r-lbl{font-size:0.62rem;font-weight:900;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.5px;}
+.r-txt{font-size:0.98rem;font-weight:700;line-height:1.7;font-style:italic;color:rgba(255,255,255,0.92);}
+.r-mood{display:inline-block;margin-top:12px;background:rgba(255,255,255,0.06);border-radius:10px;padding:6px 14px;font-size:0.78rem;font-weight:900;}
+.r-mood.dog{color:#FF6B35;}.r-mood.cat{color:#7B5EA7;}
+.r-btns{display:flex;gap:10px;margin-top:14px;}
+.r-btn{flex:1;padding:9px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:900;cursor:pointer;transition:all 0.2s;border:1.5px solid;}
+.r-btn.dog{border-color:#FF6B35;background:transparent;color:#FF6B35;}
+.r-btn.dog:hover{background:#FF6B35;color:white;}
+.r-btn.cat{border-color:#7B5EA7;background:transparent;color:#7B5EA7;}
+.r-btn.cat:hover{background:#7B5EA7;color:white;}
+.r-btn.sec{border-color:rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.35);}
+.r-btn.sec:hover{background:rgba(255,255,255,0.05);}
+
+/* Footer */
+footer{background:#080808;padding:30px 20px;text-align:center;border-top:1px solid rgba(255,255,255,0.04);}
+.foot-logo{font-family:'Fredoka One',cursive;font-size:1.5rem;color:#FF6B35;margin-bottom:6px;}
+footer p{font-size:0.75rem;color:rgba(255,255,255,0.2);font-weight:700;}
+
+@media(max-width:600px){
+  .pet-grid{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);}
+  .pet-strip{height:160px;}
+  .app-card{padding:22px 16px;}
+  .how-grid{grid-template-columns:1fr;}
+  .pet-bubble{font-size:0.58rem;padding:5px 8px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+
+  <!-- 10 pet cells with bubbles on each -->
+  <div class="pet-grid">
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&q=85" alt="Dog"/>
+      <div class="pet-bubble">I have been waiting<br>47 mins for a treat 😤</div>
+      <div class="pet-name">🐶 Buddy</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?w=400&q=85" alt="Cat"/>
+      <div class="pet-bubble">I own this house.<br>You pay rent. 👑</div>
+      <div class="pet-name">🐱 Luna</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=85" alt="Dog"/>
+      <div class="pet-bubble">WALK?! DID YOU<br>SAY WALK?! 🚨</div>
+      <div class="pet-name">🐶 Max</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&q=85" alt="Cat"/>
+      <div class="pet-bubble">I knocked it over.<br>No regrets. 😈</div>
+      <div class="pet-name">🐱 Shadow</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1601979031925-424e53b6caaa?w=400&q=85" alt="Dog"/>
+      <div class="pet-bubble">BEST. DAY. EVER.<br>Again!! 🎉</div>
+      <div class="pet-name">🐶 Charlie</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400&q=85" alt="Cat"/>
+      <div class="pet-bubble">Touch my belly.<br>I dare you. 😼</div>
+      <div class="pet-name">🐱 Mochi</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=400&q=85" alt="Dog"/>
+      <div class="pet-bubble">You were gone 3 mins.<br>I thought you died. 😢</div>
+      <div class="pet-name">🐶 Cooper</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=400&q=85" alt="Cat"/>
+      <div class="pet-bubble">The wifi is slow.<br>Fix it. 😾</div>
+      <div class="pet-name">🐱 Oreo</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&q=85" alt="Dog"/>
+      <div class="pet-bubble">SQUIRREL.<br>SQUIRREL. SQUIRREL. 🐿️</div>
+      <div class="pet-name">🐶 Rocky</div>
+    </div>
+
+    <div class="pet-cell">
+      <img src="https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=400&q=85" alt="Cat"/>
+      <div class="pet-bubble">It's 3am. Perfect time<br>for zoomies. 🌙</div>
+      <div class="pet-name">🐱 Nala</div>
+    </div>
+
+  </div>
+
+  <!-- Central logo overlay -->
+  <div class="hero-center">
+    <div class="hero-logo">PawTalk</div>
+    <div class="hero-tag">Finally. A translator your pet deserves.</div>
+    <a href="#app" class="hero-cta">🐾 Translate My Pet</a>
+  </div>
+
+  <div class="scroll-hint">
+    <span>scroll</span>
+    <span>↓</span>
+  </div>
+</section>
+
+<!-- ===== TICKER ===== -->
+<div class="ticker">
+  <div class="ticker-track">
+    🐶 "I have been betrayed." &nbsp;•&nbsp; 🐱 "I own everything in a 5-metre radius." &nbsp;•&nbsp; 🐶 "You left for 4 minutes. I thought you were GONE FOREVER." &nbsp;•&nbsp; 🐱 "The dog is looking at me again. I am filing a complaint." &nbsp;•&nbsp; 🐶 "SQUIRREL." &nbsp;•&nbsp; 🐱 "You call this dinner? I've had better." &nbsp;•&nbsp; 🐶 "Is it walk time? It's walk time. It's ALWAYS walk time." &nbsp;•&nbsp; 🐱 "Touch my belly. I dare you." &nbsp;•&nbsp; 🐶 "I have been waiting 47 minutes for a treat." &nbsp;•&nbsp; 🐱 "This is MY chair. You may stand." &nbsp;•&nbsp; 🐶 "I have been betrayed." &nbsp;•&nbsp; 🐱 "I own everything in a 5-metre radius." &nbsp;•&nbsp; 🐶 "You left for 4 minutes. I thought you were GONE FOREVER." &nbsp;•&nbsp; 🐱 "The dog is looking at me again. I am filing a complaint." &nbsp;•&nbsp; 🐶 "SQUIRREL." &nbsp;•&nbsp; 🐱 "You call this dinner? I've had better." &nbsp;•&nbsp; 🐶 "Is it walk time? It's walk time. It's ALWAYS walk time." &nbsp;•&nbsp; 🐱 "Touch my belly. I dare you." &nbsp;•&nbsp; 🐶 "I have been waiting 47 minutes for a treat." &nbsp;•&nbsp; 🐱 "This is MY chair. You may stand." &nbsp;•&nbsp;
+  </div>
+</div>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section dark">
+  <div class="section-label">How it works</div>
+  <div class="section-title">Simple. Stupid. Brilliant.</div>
+  <div class="how-grid">
+    <div class="how-card">
+      <img src="https://images.unsplash.com/photo-1551884170-09fb70a3a2ed?w=600&q=85" alt="Snap"/>
+      <div class="how-card-body">
+        <div class="how-num">01</div>
+        <div class="how-title">Snap or record</div>
+        <div class="how-desc">Upload a photo of your pet mid-drama, or record their bark / meow.</div>
+      </div>
+    </div>
+    <div class="how-card">
+      <img src="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&q=85" alt="AI reads"/>
+      <div class="how-card-body">
+        <div class="how-num">02</div>
+        <div class="how-title">AI reads the vibes</div>
+        <div class="how-desc">PawTalk reads body language, expression, and pure chaos energy. With zero scientific basis whatsoever.</div>
+      </div>
+    </div>
+    <div class="how-card">
+      <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=85" alt="Translation"/>
+      <div class="how-card-body">
+        <div class="how-num">03</div>
+        <div class="how-title">Get the translation</div>
+        <div class="how-desc">Your pet speaks. You finally understand. It's probably about treats.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PET STRIP ===== -->
+<div class="pet-strip">
+  <div class="strip-cell">
+    <img src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400&q=85" alt="Dog"/>
+    <div class="strip-bub">I did nothing wrong.<br>Allegedly.</div>
+    <div class="strip-label">🐶 Hover me</div>
+  </div>
+  <div class="strip-cell">
+    <img src="https://images.unsplash.com/photo-1570824104453-508955ab713e?w=400&q=85" alt="Cat"/>
+    <div class="strip-bub">Midnight zoomies.<br>Non-negotiable.</div>
+    <div class="strip-label">🐱 Hover me</div>
+  </div>
+  <div class="strip-cell">
+    <img src="https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=400&q=85" alt="Dog"/>
+    <div class="strip-bub">BEST DAY EVER!!<br>Again!! 🎉</div>
+    <div class="strip-label">🐶 Hover me</div>
+  </div>
+  <div class="strip-cell">
+    <img src="https://images.unsplash.com/photo-1529778873920-4da4926a72c2?w=400&q=85" alt="Cat"/>
+    <div class="strip-bub">I knocked it over.<br>No regrets. 😈</div>
+    <div class="strip-label">🐱 Hover me</div>
+  </div>
+  <div class="strip-cell">
+    <img src="https://images.unsplash.com/photo-1568572933382-74d440642117?w=400&q=85" alt="Dog"/>
+    <div class="strip-bub">You were gone 3 mins.<br>I thought you died. 😢</div>
+    <div class="strip-label">🐶 Hover me</div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<section class="app-section" id="app">
+  <div class="section-label">The translator</div>
+  <div class="section-title">What are they saying?</div>
+
+  <div class="app-card">
+    <div class="pet-toggle">
+      <button class="ptbtn active" id="dog-btn" onclick="setPet('dog')">🐶 Dog</button>
+      <button class="ptbtn" id="cat-btn" onclick="setPet('cat')">🐱 Cat</button>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="mtab active" id="tab-photo" onclick="setMode('photo')">📸 Photo</button>
+      <button class="mtab" id="tab-audio" onclick="setMode('audio')">🎤 Bark / Meow</button>
+    </div>
+
+    <div id="panel-photo">
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)"/>
+        <span class="uico">📷</span>
+        <p>Tap to upload your pet's photo</p>
+      </div>
+      <div id="prev-wrap">
+        <img id="prev-img" src="" alt="Pet preview"/>
+        <button class="chg-btn" onclick="resetPhoto()">Change photo</button>
+      </div>
+    </div>
+
+    <div id="panel-audio" style="display:none;">
+      <div class="audio-area">
+        <button class="rec-btn" id="rec-btn" onclick="toggleRec()">
+          <span class="mic">🎙️</span>
+          <span id="rec-lbl">RECORD</span>
+        </button>
+        <div class="rec-status" id="rec-status">Tap to record your pet</div>
+        <audio id="pt-audio" controls></audio>
+      </div>
+    </div>
+
+    <div class="name-row">
+      <label>Pet's name</label>
+      <input type="text" id="pet-name" placeholder="e.g. Shine" maxlength="30"/>
+    </div>
+
+    <button class="go-btn" id="go-btn" onclick="translate()" disabled>🐾 What are they saying?!</button>
+
+    <div class="loading" id="loading">
+      <div class="paws"><span>🐾</span><span>🐾</span><span>🐾</span></div>
+      <div class="load-txt" id="load-txt">Decoding the drama...</div>
+    </div>
+
+    <div class="err" id="err-box"></div>
+
+    <div class="result" id="result-card">
+      <div class="r-head">
+        <div class="r-ava" id="r-ava">🐶</div>
+        <div>
+          <div class="r-who dog" id="r-who">Shine says:</div>
+          <div class="r-lbl">AI Translation</div>
+        </div>
+      </div>
+      <div class="r-txt" id="r-txt"></div>
+      <div class="r-mood dog" id="r-mood"></div>
+      <div class="r-btns">
+        <button class="r-btn dog" id="copy-btn" onclick="copyRes()">📋 Copy</button>
+        <button class="r-btn sec" onclick="tryAgain()">🔄 Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-logo">PawTalk 🐾</div>
+  <p>Made with love, AI, and zero scientific credibility.</p>
+</footer>
+
+<script>
+let pet='dog',mode='photo';
+let photoB64=null,photoMime='image/jpeg';
+let audioB64=null,audioBlob=null;
+let mediaRec=null,recChunks=[],isRec=false;
+let lastResult='';
+const loadLines=["Decoding the drama...","Consulting the paw-racle...","Translating floof signals...","Your pet has A LOT to say...","Reading the attitude...","Interpreting the chaos..."];
+
+function setPet(p){
+  pet=p;
+  document.getElementById('dog-btn').className='ptbtn'+(p==='dog'?' active':'');
+  document.getElementById('cat-btn').className='ptbtn'+(p==='cat'?' active iscat':'');
+  const mb=document.getElementById('tab-audio');
+  p==='cat'?mb.classList.add('iscat'):mb.classList.remove('iscat');
+  const rb=document.getElementById('rec-btn');
+  p==='cat'?rb.classList.add('iscat'):rb.classList.remove('iscat');
+}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('panel-photo').style.display=m==='photo'?'block':'none';
+  document.getElementById('panel-audio').style.display=m==='audio'?'block':'none';
+  document.getElementById('tab-photo').className='mtab'+(m==='photo'?' active':'');
+  document.getElementById('tab-audio').className='mtab'+(m==='audio'?' active'+(pet==='cat'?' iscat':''):'');
+  checkReady();
+}
+
+function handlePhoto(e){
+  const file=e.target.files[0];if(!file)return;
+  photoMime=file.type||'image/jpeg';
+  const r=new FileReader();
+  r.onload=ev=>{
+    photoB64=ev.target.result.split(',')[1];
+    document.getElementById('prev-img').src=ev.target.result;
+    document.getElementById('prev-wrap').style.display='block';
+    document.getElementById('upload-zone').style.display='none';
+    checkReady();
+  };
+  r.readAsDataURL(file);
+}
+
+function resetPhoto(){
+  photoB64=null;
+  document.getElementById('prev-wrap').style.display='none';
+  document.getElementById('upload-zone').style.display='block';
+  document.getElementById('photo-input').value='';
+  hideResult();checkReady();
+}
+
+async function toggleRec(){if(isRec)stopRec();else startRec();}
+
+async function startRec(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    recChunks=[];
+    const mime=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4';
+    mediaRec=new MediaRecorder(stream,{mimeType:mime});
+    mediaRec.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
+    mediaRec.onstop=()=>{
+      audioBlob=new Blob(recChunks,{type:mime});
+      const url=URL.createObjectURL(audioBlob);
+      const el=document.getElementById('pt-audio');
+      el.src=url;el.style.display='block';
+      const r=new FileReader();
+      r.onload=ev=>{audioB64=ev.target.result.split(',')[1];checkReady();};
+      r.readAsDataURL(audioBlob);
+      stream.getTracks().forEach(t=>t.stop());
+    };
+    mediaRec.start();isRec=true;
+    document.getElementById('rec-btn').classList.add('recording');
+    document.getElementById('rec-lbl').textContent='STOP';
+    document.getElementById('rec-status').textContent='🔴 Recording... tap to stop';
+    document.getElementById('rec-status').classList.add('live');
+  }catch(err){showErr('Mic access needed! Allow microphone permissions and try again.');}
+}
+
+function stopRec(){
+  if(mediaRec)mediaRec.stop();
+  isRec=false;
+  document.getElementById('rec-btn').classList.remove('recording');
+  document.getElementById('rec-lbl').textContent='RECORD';
+  document.getElementById('rec-status').textContent='✅ Got it! Hit translate.';
+  document.getElementById('rec-status').classList.remove('live');
+}
+
+function checkReady(){document.getElementById('go-btn').disabled=!(mode==='photo'?photoB64:audioB64);}
+function showErr(msg){const el=document.getElementById('err-box');el.textContent=msg;el.style.display='block';}
+function hideResult(){document.getElementById('result-card').style.display='none';document.getElementById('err-box').style.display='none';}
+
+async function translate(){
+  const petName=document.getElementById('pet-name').value.trim()||(pet==='dog'?'Doggo':'Kitty');
+  hideResult();
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('go-btn').disabled=true;
+  let li=0;
+  const ltEl=document.getElementById('load-txt');
+  const lt=setInterval(()=>{li=(li+1)%loadLines.length;ltEl.textContent=loadLines[li];},1800);
+
+  try{
+    const sys=`You are PawTalk, a hilariously dramatic pet-to-human translator. Translate what this ${pet} is saying or expressing, speaking in FIRST PERSON as the pet.
+
+Rules:
+- Always speak as the pet (I, my, me)
+- Be funny, dramatic, slightly unhinged — pets are extra
+- Reference specific body language, expressions, or sounds you observe
+- 2-4 sentences max
+- End with a mood tag like: Current Mood: 👑 Demanding Royalty
+
+Respond ONLY with valid JSON, no markdown:
+{"translation":"...","mood":"..."}`;
+
+    let msgs;
+    if(mode==='photo'&&photoB64){
+      msgs=[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:photoMime,data:photoB64}},
+        {type:'text',text:`This is my ${pet} named ${petName}. Translate what they're expressing. Be funny, dramatic, first person as ${petName}.`}
+      ]}];
+    }else{
+      msgs=[{role:'user',content:`My ${pet} named ${petName} just made sounds. Translate what ${petName} is most dramatically saying. First person, very funny, fully commit to the bit.`}];
+    }
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':'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',
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-allow-browser':'true'
+      },
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:msgs})
+    });
+
+    const data=await res.json();
+    clearInterval(lt);
+    if(data.error)throw new Error(data.error.message);
+
+    const raw=data.content?.find(b=>b.type==='text')?.text||'';
+    let parsed;
+    try{parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());}
+    catch{parsed={translation:raw,mood:'🐾 Vibe: Unclassifiable'};}
+
+    lastResult=`${petName} says: "${parsed.translation}" — ${parsed.mood}`;
+
+    const isCat=pet==='cat';
+    document.getElementById('r-ava').textContent=isCat?'🐱':'🐶';
+    document.getElementById('r-who').textContent=`${petName} says:`;
+    document.getElementById('r-who').className=`r-who ${isCat?'cat':'dog'}`;
+    document.getElementById('r-txt').textContent=`"${parsed.translation}"`;
+    document.getElementById('r-mood').textContent=parsed.mood;
+    document.getElementById('r-mood').className=`r-mood ${isCat?'cat':'dog'}`;
+    document.getElementById('copy-btn').className=`r-btn ${isCat?'cat':'dog'}`;
+    const rc=document.getElementById('result-card');
+    rc.className=`result ${isCat?'cat-r':'dog-r'}`;
+    rc.style.display='block';
+    rc.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(err){
+    clearInterval(lt);
+    showErr(`Something went wrong — even AI struggles with ${pet}s. Try again! (${err.message})`);
+  }finally{
+    document.getElementById('loading').classList.remove('show');
+    checkReady();
+  }
+}
+
+function copyRes(){
+  navigator.clipboard.writeText(lastResult).then(()=>{
+    const b=document.getElementById('copy-btn');
+    b.textContent='✅ Copied!';
+    setTimeout(()=>{b.textContent='📋 Copy';},2000);
+  });
+}
+
+function tryAgain(){
+  hideResult();
+  if(mode==='photo')resetPhoto();
+  else{
+    audioB64=null;
+    document.getElementById('pt-audio').style.display='none';
+    document.getElementById('rec-status').textContent='Tap to record your pet';
+    checkReady();
+  }
+}
+</script>
+</body>
+</html>
