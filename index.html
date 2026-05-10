@@ -316,6 +316,7 @@ body{font-family:'Nunito',sans-serif;background:#0d0d0d;color:#fff;min-height:10
 .r-who.dog{color:#FF6B35;}.r-who.cat{color:#7B5EA7;}
 .r-txt{font-size:1.25rem;font-weight:900;line-height:1.4;color:white;animation:textPop 0.4s ease 0.4s both;}
 @keyframes textPop{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@keyframes confettiFly{0%{transform:translateY(0) scale(1);opacity:1;}100%{transform:translateY(-120px) scale(0.5);opacity:0;}}
 .r-mood{display:inline-block;margin-top:14px;background:rgba(255,255,255,0.08);border-radius:20px;padding:7px 16px;font-size:0.9rem;font-weight:900;animation:textPop 0.4s ease 0.6s both;}
 .r-mood.dog{color:#FF6B35;}.r-mood.cat{color:#7B5EA7;}
 .r-btns{display:flex;gap:10px;margin-top:16px;}
@@ -553,19 +554,7 @@ footer p{font-size:0.75rem;color:rgba(255,255,255,0.2);font-weight:700;}
         </div>
       </div>
     </div>
-      <div class="r-head">
-        <div class="r-ava" id="r-ava" style="overflow:hidden;padding:0;">🐶</div>
-        <div>
-          <div class="r-who dog" id="r-who">Shine says:</div>
-          <div class="r-lbl">AI Translation</div>
-        </div>
-      </div>
-      <div class="r-txt" id="r-txt"></div>
-      <div class="r-mood dog" id="r-mood"></div>
-      <div class="r-btns">
-        <button class="r-btn dog" id="copy-btn" onclick="copyRes()">📋 Copy</button>
-        <button class="r-btn sec" onclick="tryAgain()">🔄 Try Again</button>
-      </div>
+
     </div>
   </div>
 </section>
@@ -714,7 +703,11 @@ Respond ONLY with valid JSON:
     else{avaEl.textContent=isCat?'🐱':'🐶';}
     document.getElementById('r-who').textContent=`${petName} says:`;
     document.getElementById('r-who').className=`r-who ${isCat?'cat':'dog'}`;
-    document.getElementById('r-txt').textContent=`"${parsed.translation}"`;
+    const txt=`"${parsed.translation}"`;
+    const txtEl=document.getElementById('r-txt');
+    txtEl.textContent='';
+    let ci=0;
+    const tw=setInterval(()=>{if(ci<txt.length){txtEl.textContent+=txt[ci];ci++;}else clearInterval(tw);},30);
     document.getElementById('r-mood').textContent=parsed.mood;
     document.getElementById('r-mood').className=`r-mood ${isCat?'cat':'dog'}`;
     document.getElementById('copy-btn').className=`r-btn ${isCat?'cat':'dog'}`;
@@ -722,6 +715,14 @@ Respond ONLY with valid JSON:
     rc.className=`result ${isCat?'cat-r':'dog-r'}`;
     rc.style.display='block';
     rc.scrollIntoView({behavior:'smooth',block:'nearest'});
+    // Confetti burst
+    for(let i=0;i<8;i++){
+      const p=document.createElement('div');
+      p.textContent=['🐾','✨','💥','⭐','🎉'][Math.floor(Math.random()*5)];
+      p.style.cssText='position:fixed;font-size:1.5rem;pointer-events:none;z-index:9999;top:50%;left:'+(20+Math.random()*60)+'%;animation:confettiFly 1s ease-out forwards;';
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(),1000);
+    }
   }catch(err){
     clearInterval(lt);
     showErr(`Something went wrong — even AI struggles with ${pet}s. Try again! (${err.message})`);
