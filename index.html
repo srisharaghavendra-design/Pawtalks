@@ -652,7 +652,7 @@ function checkReady(){document.getElementById('go-btn').disabled=!(mode==='photo
 function showErr(msg){const el=document.getElementById('err-box');el.textContent=msg;el.style.display='block';}
 function hideResult(){document.getElementById('result-card').style.display='none';document.getElementById('err-box').style.display='none';}
 
-async function translate(){
+async function doTranslate(){
   const petName=document.getElementById('pet-name').value.trim()||(pet==='dog'?'Doggo':'Kitty');
   hideResult();
   document.getElementById('loading').classList.add('show');
