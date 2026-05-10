@@ -662,16 +662,11 @@ async function doTranslate(){
   const lt=setInterval(()=>{li=(li+1)%loadLines.length;ltEl.textContent=loadLines[li];},1800);
 
   try{
-    const sys=`You are PawTalk, a hilariously dramatic pet-to-human translator. Translate what this ${pet} is saying or expressing, speaking in FIRST PERSON as the pet.
+    const sys=`You are PawTalk. Look at this ${pet} photo and write ONE savage, punchy one-liner caption from the pet's POV. Think dank meme energy. Max 12 words. Brutally funny. No fluff.
 
-Rules:
-- Always speak as the pet (I, my, me)
-- Be funny, dramatic, slightly unhinged — pets are extra
-- Reference specific body language, expressions, or sounds you observe
-- 2-4 sentences max
-- End with a mood tag like: Current Mood: 👑 Demanding Royalty
+End with a short mood tag like: 😤 Unimpressed or 👑 Main Character or 🍖 Hungry or 😈 Plotting
 
-Respond ONLY with valid JSON, no markdown:
+Respond ONLY with valid JSON:
 {"translation":"...","mood":"..."}`;
 
     let msgs;
@@ -702,7 +697,9 @@ Respond ONLY with valid JSON, no markdown:
     lastResult=`${petName} says: "${parsed.translation}" — ${parsed.mood}`;
 
     const isCat=pet==='cat';
-    document.getElementById('r-ava').textContent=isCat?'🐱':'🐶';
+    const avaEl=document.getElementById('r-ava-img');
+    if(photoB64&&mode==='photo'){avaEl.innerHTML='<img src="data:'+photoMime+';base64,'+photoB64+'" style="width:100%;height:100%;object-fit:cover;"/>';}
+    else{avaEl.textContent=isCat?'🐱':'🐶';}
     document.getElementById('r-who').textContent=`${petName} says:`;
     document.getElementById('r-who').className=`r-who ${isCat?'cat':'dog'}`;
     document.getElementById('r-txt').textContent=`"${parsed.translation}"`;
