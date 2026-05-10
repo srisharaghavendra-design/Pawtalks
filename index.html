@@ -542,7 +542,7 @@ footer p{font-size:0.75rem;color:rgba(255,255,255,0.2);font-weight:700;}
 
     <div class="result" id="result-card">
       <div class="r-head">
-        <div class="r-ava" id="r-ava">🐶</div>
+        <div class="r-ava" id="r-ava" style="overflow:hidden;padding:0;">🐶</div>
         <div>
           <div class="r-who dog" id="r-who">Shine says:</div>
           <div class="r-lbl">AI Translation</div>
@@ -697,7 +697,7 @@ Respond ONLY with valid JSON:
     lastResult=`${petName} says: "${parsed.translation}" — ${parsed.mood}`;
 
     const isCat=pet==='cat';
-    const avaEl=document.getElementById('r-ava-img');
+    const avaEl=document.getElementById('r-ava');
     if(photoB64&&mode==='photo'){avaEl.innerHTML='<img src="data:'+photoMime+';base64,'+photoB64+'" style="width:100%;height:100%;object-fit:cover;"/>';}
     else{avaEl.textContent=isCat?'🐱':'🐶';}
     document.getElementById('r-who').textContent=`${petName} says:`;
