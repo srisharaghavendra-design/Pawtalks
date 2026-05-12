@@ -593,16 +593,26 @@ function setMode(m){
 
 function handlePhoto(e){
   const file=e.target.files[0];if(!file)return;
-  photoMime=file.type||'image/jpeg';
-  const r=new FileReader();
-  r.onload=ev=>{
-    photoB64=ev.target.result.split(',')[1];
-    document.getElementById('prev-img').src=ev.target.result;
+  const img=new Image();
+  const objectUrl=URL.createObjectURL(file);
+  img.onload=()=>{
+    const canvas=document.createElement('canvas');
+    const MAX=1200;
+    let w=img.width,h=img.height;
+    if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+    if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+    canvas.width=w;canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    const dataUrl=canvas.toDataURL('image/jpeg',0.85);
+    photoB64=dataUrl.split(',')[1];
+    photoMime='image/jpeg';
+    document.getElementById('prev-img').src=dataUrl;
     document.getElementById('prev-wrap').style.display='block';
     document.getElementById('upload-zone').style.display='none';
+    URL.revokeObjectURL(objectUrl);
     checkReady();
   };
-  r.readAsDataURL(file);
+  img.src=objectUrl;
 }
 
 function resetPhoto(){
