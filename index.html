@@ -680,13 +680,14 @@ Respond ONLY with valid JSON:
       msgs=[{role:'user',content:`My ${pet} named ${petName} just made sounds. Translate what ${petName} is most dramatically saying. First person, very funny, fully commit to the bit.`}];
     }
 
-    const res=await fetch('/api/translate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:msgs})
-    });
-
-    const data=await res.json();
+    const payload={model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:msgs};
+    let res,data;
+    for(let attempt=0;attempt<3;attempt++){
+      res=await fetch('/api/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      data=await res.json();
+      if(!data.error)break;
+      if(attempt<2)await new Promise(r=>setTimeout(r,1200));
+    }
     clearInterval(lt);
     if(data.error)throw new Error(data.error.message);
 
